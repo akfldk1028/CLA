@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git clone:*)",
+      "WebFetch(domain:adocomplete.com)",
+      "WebFetch(domain:news.hada.io)"
+    ]
+  }
+}
