@@ -17,8 +17,9 @@ CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 The project's conversation history is in `$CLAUDE_DIR/projects/`. The folder name is the project path with slashes replaced by dashes.
 
 ```bash
-PROJECT_PATH=$(pwd | sed 's|/|-|g' | sed 's|^-||')
-CONVO_DIR="$CLAUDE_DIR/projects/-${PROJECT_PATH}"
+# Cross-platform: handles /home/user/project and D:\Data\project
+PROJECT_DIR=$(pwd | sed 's|[/\\:_]|-|g')
+CONVO_DIR="$CLAUDE_DIR/projects/${PROJECT_DIR}"
 ls -lt "$CONVO_DIR"/*.jsonl | head -20
 ```
 

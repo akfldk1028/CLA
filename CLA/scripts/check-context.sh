@@ -3,17 +3,9 @@
 # Stop hook: suggests /half-clone when context usage exceeds 85%.
 # When triggered, it blocks Claude from stopping and tells it to run /half-clone,
 # which creates a new conversation with only the later half to continue in.
-# Install by adding to ~/.claude/settings.json:
-# {
-#   "hooks": {
-#     "Stop": [{
-#       "hooks": [{
-#         "type": "command",
-#         "command": "~/.claude/scripts/check-context.sh"
-#       }]
-#     }]
-#   }
-# }
+# Installed automatically by CLA install.sh into $CLAUDE_CONFIG_DIR/settings.json.
+# Manual install: add to settings.json hooks.Stop array:
+#   {"hooks":[{"type":"command","command":"bash $CLAUDE_CONFIG_DIR/scripts/check-context.sh"}]}
 
 input=$(cat)
 

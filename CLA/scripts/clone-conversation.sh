@@ -65,7 +65,8 @@ generate_uuid() {
 }
 
 convert_path_to_dirname() {
-    echo "$1" | sed 's|^/||' | sed 's|/|-|g' | sed 's|^|-|'
+    # Replace / \ : _ with - (cross-platform: Linux, macOS, Windows/Git Bash)
+    echo "$1" | sed 's|[/\\:_]|-|g'
 }
 
 find_conversation_file() {
@@ -95,6 +96,16 @@ find_conversation_file() {
 
 get_project_from_conv_file() {
     local conv_file="$1"
+    local session_id
+    session_id=$(basename "$conv_file" .jsonl)
+    # Look up actual project path from history.jsonl (authoritative source)
+    local project
+    project=$(grep "$session_id" "$HISTORY_FILE" 2>/dev/null | tail -1 | sed 's/.*"project":"//;s/".*//' || true)
+    if [ -n "$project" ]; then
+        echo "$project"
+        return 0
+    fi
+    # Fallback: reverse dirname conversion (lossy - works on Linux/macOS only)
     local project_dirname
     project_dirname=$(dirname "$conv_file" | xargs basename)
     echo "$project_dirname" | sed 's|^-|/|' | sed 's|-|/|g'
