@@ -3,7 +3,19 @@
     "allow": [
       "Bash(git clone:*)",
       "WebFetch(domain:adocomplete.com)",
-      "WebFetch(domain:news.hada.io)"
+      "WebFetch(domain:news.hada.io)",
+      "Bash(bash \"D:/Data/30_CLA/claude-master/scripts/install.sh\")",
+      "Bash(where:*)",
+      "Bash(git -C \"D:\\\\Data\\\\30_CLA\" log --oneline -20)",
+      "Bash(printenv:*)",
+      "Bash(echo:*)",
+      "Bash(bash D:/Data/30_CLA/CLA/install.sh)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:claudelog.com)",
+      "Bash(curl:*)",
+      "Bash(chmod:*)",
+      "Bash(/tmp/jq.exe:*)"
     ]
   }
 }

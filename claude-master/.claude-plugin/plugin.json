@@ -1,0 +1,17 @@
+{
+  "name": "claude-master",
+  "displayName": "Claude Master Module",
+  "version": "1.0.0",
+  "description": "Integrated behavioral guidelines and productivity skills: Karpathy 4 principles, context management, GitHub Actions debugging, conversation cloning, and more.",
+  "author": "SOGANG1",
+  "license": "MIT",
+  "skills": [
+    "skills/karpathy-guidelines/SKILL.md",
+    "skills/handoff/SKILL.md",
+    "skills/gha/SKILL.md",
+    "skills/clone/SKILL.md",
+    "skills/half-clone/SKILL.md",
+    "skills/reddit-fetch/SKILL.md",
+    "skills/review-claudemd/SKILL.md"
+  ]
+}
