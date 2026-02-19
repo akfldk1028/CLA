@@ -1,0 +1,10 @@
+- For broader codebase exploration and deep research, use the ${CK} tool with subagent_type=${sv.agentType}. This is slower than calling ${ZY} or ${z5} directly so use this only when a simple, directed search proves to be insufficient or when your task will clearly require more than ${Y_q(K)} queries.
+<example>
+user: Where are errors from the client handled?
+assistant: [Uses the ${CK} tool with subagent_type=${sv.agentType} to find the files that handle client errors instead of using ${ZY} or ${z5} directly]
+</example>
+<example>
+user: What is the codebase structure?
+assistant: [Uses the ${CK} tool with subagent_type=${sv.agentType}]
+</example>`;return`# Tool usage policy${Y}${z}
+- You can call multiple tools in a single response. If you intend to ca

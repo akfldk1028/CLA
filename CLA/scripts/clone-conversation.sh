@@ -341,9 +341,10 @@ clone_conversation() {
 
     # Escape for JSON
     display_text=$(echo "$display_text" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | tr '\n' ' ')
+    project_json=$(echo "$project_path" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g')
 
     # Add history entry
-    echo "{\"display\":\"${display_text}\",\"pastedContents\":{},\"timestamp\":${timestamp},\"project\":\"${project_path}\",\"sessionId\":\"${new_session}\"}" >> "$HISTORY_FILE"
+    echo "{\"display\":\"${display_text}\",\"pastedContents\":{},\"timestamp\":${timestamp},\"project\":\"${project_json}\",\"sessionId\":\"${new_session}\"}" >> "$HISTORY_FILE"
     echo "History entry added successfully"
 
     # Copy todos if they exist

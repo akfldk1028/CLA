@@ -132,6 +132,40 @@ for tmpl in "${TEMPLATES[@]}"; do
     fi
 done
 
+# --- Git hooks (auto-sync on git pull / branch switch) ---
+log_info "Git hooks..."
+
+REPO_ROOT="$(cd "$CLA_DIR/.." && git rev-parse --show-toplevel 2>/dev/null)" || true
+REPO_ROOT="${REPO_ROOT//\\//}"
+
+if [ -n "$REPO_ROOT" ] && [ -d "$REPO_ROOT/.git/hooks" ]; then
+    HOOKS=(post-merge post-checkout)
+    for hook in "${HOOKS[@]}"; do
+        src="$CLA_DIR/hooks/$hook"
+        dst="$REPO_ROOT/.git/hooks/$hook"
+        if [ ! -f "$src" ]; then
+            log_warning "  $hook: source not found, skipping"
+            continue
+        fi
+        # If hook already exists and is NOT ours, don't overwrite
+        if [ -f "$dst" ] && ! grep -q "CLA" "$dst" 2>/dev/null; then
+            log_warning "  $hook: existing non-CLA hook found, skipping (backup or merge manually)"
+            SKIPPED=$((SKIPPED + 1))
+            continue
+        fi
+        if copy_if_changed "$src" "$dst"; then
+            chmod +x "$dst"
+            log_success "  $hook hook installed"
+            COPIED=$((COPIED + 1))
+        else
+            log_success "  $hook hook (unchanged)"
+            SKIPPED=$((SKIPPED + 1))
+        fi
+    done
+else
+    log_warning "  Not a git repo or .git/hooks not found, skipping git hooks"
+fi
+
 # --- Stop hook in settings.json ---
 log_info "Checking settings.json for Stop hook..."
 
@@ -148,14 +182,13 @@ if grep -q "check-context.sh" "$SETTINGS_FILE" 2>/dev/null; then
     log_success "  Stop hook already exists, skipping"
 else
     if command -v jq > /dev/null 2>/dev/null; then
-        HOOK_ENTRY="{\"hooks\":[{\"type\":\"command\",\"command\":\"${HOOK_CMD}\"}]}"
-
-        # Add to existing Stop hooks array or create it
-        jq --argjson hook "$HOOK_ENTRY" '
+        # Use --arg (not --argjson) to safely handle paths with spaces
+        jq --arg cmd "$HOOK_CMD" '
+            .hooks = (.hooks // {}) |
             if .hooks.Stop then
-                .hooks.Stop += [$hook]
+                .hooks.Stop += [{"hooks":[{"type":"command","command":$cmd}]}]
             else
-                .hooks = (.hooks // {}) + {"Stop": [$hook]}
+                .hooks.Stop = [{"hooks":[{"type":"command","command":$cmd}]}]
             end
         ' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp" && mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
         log_success "  Stop hook added"
@@ -177,6 +210,7 @@ echo "  - skills/ (${#SKILLS[@]} skills: ${SKILLS[*]})"
 echo "  - scripts/ (${#SCRIPTS[@]} scripts)"
 echo "  - templates/ (${#TEMPLATES[@]} project templates)"
 echo "  - Stop hook for auto half-clone at >85% context"
+echo "  - Git hooks (auto-install on git pull/branch switch)"
 echo ""
 echo "Start a new Claude Code session to apply."
 echo ""

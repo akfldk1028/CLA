@@ -45,7 +45,7 @@ if [[ -n "$cwd" && -d "$cwd" ]]; then
             fetch_head="$cwd/.git/FETCH_HEAD"
             fetch_ago=""
             if [[ -f "$fetch_head" ]]; then
-                fetch_time=$(stat -f %m "$fetch_head" 2>/dev/null || stat -c %Y "$fetch_head" 2>/dev/null)
+                fetch_time=$(stat -f %m "$fetch_head" 2>/dev/null || stat -c %Y "$fetch_head" 2>/dev/null || date -r "$fetch_head" +%s 2>/dev/null)
                 if [[ -n "$fetch_time" ]]; then
                     now=$(date +%s)
                     diff=$((now - fetch_time))
@@ -119,6 +119,9 @@ if [[ -n "$transcript_path" && -f "$transcript_path" ]]; then
     # plus ~2k for git status, env block, XML framing, and other dynamic context
     baseline=20000
     bar_width=10
+
+    # Guard against non-numeric jq output
+    [[ ! "$context_length" =~ ^[0-9]+$ ]] && context_length=0
 
     if [[ "$context_length" -gt 0 ]]; then
         pct=$((context_length * 100 / max_context))

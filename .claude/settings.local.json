@@ -15,7 +15,20 @@
       "WebFetch(domain:claudelog.com)",
       "Bash(curl:*)",
       "Bash(chmod:*)",
-      "Bash(/tmp/jq.exe:*)"
+      "Bash(/tmp/jq.exe:*)",
+      "Bash(git -C D:/Data/30_CLA log --oneline -5)",
+      "Bash(git -C D:/Data/30_CLA status --short)",
+      "Bash(git -C D:/Data/30_CLA diff --stat)",
+      "Bash(git -C D:/Data/30_CLA log --oneline -3)",
+      "Bash(git -C D:/Data/30_CLA add CLA/scripts/check-context.sh CLA/scripts/clone-conversation.sh CLA/scripts/half-clone-conversation.sh CLA/skills/review-claudemd/SKILL.md)",
+      "Bash(git -C D:/Data/30_CLA push)",
+      "Bash(git -C \"D:/Data/30_CLA\" log --oneline -10)",
+      "Bash(claude --version:*)",
+      "Bash(npm install:*)",
+      "Bash(npm root:*)",
+      "Bash(xargs:*)",
+      "Bash(xxd:*)",
+      "Bash(wc:*)"
     ]
   }
 }

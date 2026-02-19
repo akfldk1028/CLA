@@ -7,6 +7,11 @@
 # Manual install: add to settings.json hooks.Stop array:
 #   {"hooks":[{"type":"command","command":"bash $CLAUDE_CONFIG_DIR/scripts/check-context.sh"}]}
 
+if ! command -v jq > /dev/null 2>&1; then
+    echo '{"decision":"block","reason":"jq is not installed. The context check hook requires jq. Install it: https://jqlang.github.io/jq/download/"}'
+    exit 0
+fi
+
 input=$(cat)
 
 # Prevent infinite loops - exit if already triggered by a stop hook
@@ -33,7 +38,11 @@ context_length=$(jq -s '
     else 0 end
 ' < "$transcript_path")
 
-if [[ -z "$context_length" || "$context_length" -eq 0 ]]; then
+if [[ -z "$context_length" || ! "$context_length" =~ ^[0-9]+$ || "$context_length" -eq 0 ]]; then
+    exit 0
+fi
+
+if [[ -z "$max_context" || ! "$max_context" =~ ^[0-9]+$ || "$max_context" -eq 0 ]]; then
     exit 0
 fi
 

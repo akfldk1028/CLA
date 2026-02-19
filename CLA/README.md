@@ -11,6 +11,17 @@ git clone <repo-url> ~/CLA && bash ~/CLA/CLA/install.sh
 
 이후 새 Claude Code 세션을 시작하면 자동 적용.
 
+### 자동 반영 (Auto-Sync)
+
+`install.sh`는 git hook도 함께 설치한다. 최초 1회 실행 이후:
+
+```
+git pull  →  post-merge hook  →  CLA/ 변경 감지  →  install.sh 자동 실행
+git checkout <branch>  →  post-checkout hook  →  CLA/ 변경 감지  →  install.sh 자동 실행
+```
+
+CLA/ 밖의 파일만 변경된 경우 hook은 install을 건너뛴다 (불필요한 실행 방지).
+
 ## 동작 원리
 
 Claude Code가 시작되면 아래 순서로 설정을 읽는다:
@@ -77,6 +88,9 @@ CLA/
 │   ├── reddit-fetch/SKILL.md         ← /reddit-fetch: Gemini로 Reddit 접근
 │   ├── review-claudemd/SKILL.md      ← /review-claudemd: CLAUDE.md 개선안 도출
 │   └── cla-init/SKILL.md             ← /cla-init <type>: 프로젝트 CLAUDE.md 생성
+├── hooks/                            ← git hooks (auto-sync)
+│   ├── post-merge                    ← git pull 후 CLA/ 변경 시 install.sh 실행
+│   └── post-checkout                 ← 브랜치 전환 후 CLA/ 변경 시 install.sh 실행
 ├── scripts/                          ← 유틸리티 스크립트 (4개)
 │   ├── context-bar.sh                ← 상태바: 모델, 브랜치, 컨텍스트 % 표시
 │   ├── check-context.sh              ← Stop hook: 85% 초과 시 half-clone 유도
@@ -99,7 +113,8 @@ CLA/                          install.sh 실행           $CLAUDE_CONFIG_DIR/
 ├── skills/8개         ─── 변경분만 복사 ───────────→  ├── skills/8개
 ├── scripts/4개        ─── 변경분만 복사 + chmod +x ─→ ├── scripts/4개
 ├── templates/6개      ─── 변경분만 복사 ───────────→  ├── templates/6개
-└── (settings.json)    ─── Stop hook만 additive 추가 → └── settings.json
+├── (settings.json)    ─── Stop hook만 additive 추가 → └── settings.json
+└── hooks/2개          ─── .git/hooks/에 복사 + chmod +x (auto-sync 등록)
 ```
 
 - **멱등성**: `diff -q`로 비교해서 동일한 파일은 건너뜀. 몇 번 실행해도 안전.

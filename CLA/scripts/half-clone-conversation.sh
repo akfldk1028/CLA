@@ -499,9 +499,10 @@ half_clone_conversation() {
 
     # Escape for JSON (LC_ALL=C for macOS sed with non-UTF-8 bytes)
     display_text=$(echo "$display_text" | LC_ALL=C sed 's/\\/\\\\/g' | LC_ALL=C sed 's/"/\\"/g' | LC_ALL=C tr '\n' ' ')
+    project_json=$(echo "$project_path" | LC_ALL=C sed 's/\\/\\\\/g' | LC_ALL=C sed 's/"/\\"/g')
 
     # Add history entry
-    echo "{\"display\":\"${display_text}\",\"pastedContents\":{},\"timestamp\":${timestamp},\"project\":\"${project_path}\",\"sessionId\":\"${new_session}\"}" >> "$HISTORY_FILE"
+    echo "{\"display\":\"${display_text}\",\"pastedContents\":{},\"timestamp\":${timestamp},\"project\":\"${project_json}\",\"sessionId\":\"${new_session}\"}" >> "$HISTORY_FILE"
     log_success "History entry added"
 
     # Note: We don't copy todos for half-clone since the context is truncated

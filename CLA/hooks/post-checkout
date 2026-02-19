@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+# post-checkout hook - Auto-run install.sh after branch switch
+#
+# Only runs on branch checkout (not file checkout).
+# Args: $1=prev HEAD, $2=new HEAD, $3=1 if branch checkout
+#
+
+PREV_HEAD="$1"
+NEW_HEAD="$2"
+IS_BRANCH="$3"
+
+# Skip file checkouts (only trigger on branch switches)
+if [ "$IS_BRANCH" != "1" ]; then
+    exit 0
+fi
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || true
+REPO_ROOT="${REPO_ROOT//\\//}"
+
+if [ -z "$REPO_ROOT" ] || [ ! -d "$REPO_ROOT/CLA" ]; then
+    exit 0
+fi
+
+# Check if CLA/ files differ between branches
+CHANGED=$(git diff --name-only "$PREV_HEAD" "$NEW_HEAD" -- CLA/ 2>/dev/null)
+
+if [ -n "$CHANGED" ]; then
+    echo "[CLA] Branch has different CLA/ files - auto-installing..."
+    bash "$REPO_ROOT/CLA/install.sh"
+else
+    echo "[CLA] CLA/ unchanged across branches, skipping install."
+fi

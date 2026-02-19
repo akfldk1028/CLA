@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# post-merge hook - Auto-run install.sh after git pull
+#
+# Checks if any CLA/ files changed in the merge, and if so,
+# re-installs to $CLAUDE_CONFIG_DIR.
+#
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || true
+REPO_ROOT="${REPO_ROOT//\\//}"
+
+if [ -z "$REPO_ROOT" ] || [ ! -d "$REPO_ROOT/CLA" ]; then
+    exit 0
+fi
+
+# Check if any CLA/ files were part of the merge
+CHANGED=$(git diff-tree -r --name-only ORIG_HEAD HEAD -- CLA/ 2>/dev/null)
+
+if [ -n "$CHANGED" ]; then
+    echo "[CLA] Detected changes in CLA/ - auto-installing..."
+    bash "$REPO_ROOT/CLA/install.sh"
+else
+    echo "[CLA] No CLA/ changes in this merge, skipping install."
+fi
