@@ -58,7 +58,7 @@ Claude Code는 설정을 **덮어쓰지 않고 누적**한다:
 2. **호출 시**: 사용자가 `/skill-name`을 입력하면 그때 SKILL.md 전체 본문을 로드.
    Claude가 본문의 지시대로 실행.
 
-따라서 스킬이 8개여도 상시 컨텍스트 소비는 description 텍스트 정도(~수백 토큰).
+따라서 스킬이 10개여도 상시 컨텍스트 소비는 description 텍스트 정도(~수백 토큰).
 
 ### hooks 동작 방식
 
@@ -79,7 +79,7 @@ CLA/
 ├── README.md                         ← 이 파일
 ├── install.sh                        ← 설치 스크립트
 ├── CLAUDE.md                         ← 글로벌 행동 규칙 (6개 섹션)
-├── skills/                           ← 글로벌 스킬 (8개)
+├── skills/                           ← 글로벌 스킬 (10개)
 │   ├── handoff/SKILL.md              ← /handoff: HANDOFF.md 작성
 │   ├── half-clone/SKILL.md           ← /half-clone: 대화 후반부만 복제
 │   ├── clone/SKILL.md                ← /clone: 대화 전체 복제
@@ -87,7 +87,9 @@ CLA/
 │   ├── karpathy-guidelines/SKILL.md  ← /karpathy-guidelines: LLM 코딩 실수 방지
 │   ├── reddit-fetch/SKILL.md         ← /reddit-fetch: Gemini로 Reddit 접근
 │   ├── review-claudemd/SKILL.md      ← /review-claudemd: CLAUDE.md 개선안 도출
-│   └── cla-init/SKILL.md             ← /cla-init <type>: 프로젝트 CLAUDE.md 생성
+│   ├── cla-init/SKILL.md             ← /cla-init <type>: 프로젝트 CLAUDE.md 생성
+│   ├── ac/SKILL.md                   ← /ac <task>: Auto-Claude 자율 빌드 생성
+│   └── ac-status/SKILL.md            ← /ac-status: Auto-Claude 데몬/태스크 상태
 ├── hooks/                            ← git hooks (auto-sync)
 │   ├── post-merge                    ← git pull 후 CLA/ 변경 시 install.sh 실행
 │   └── post-checkout                 ← 브랜치 전환 후 CLA/ 변경 시 install.sh 실행
@@ -96,13 +98,14 @@ CLA/
 │   ├── check-context.sh              ← Stop hook: 85% 초과 시 half-clone 유도
 │   ├── clone-conversation.sh         ← 대화 복제 엔진
 │   └── half-clone-conversation.sh    ← 대화 후반부 복제 엔진
-└── templates/                        ← 프로젝트 타입별 CLAUDE.md 템플릿 (6개)
+└── templates/                        ← 프로젝트 타입별 CLAUDE.md 템플릿 (7개)
     ├── rust.md                       ← cargo build/test/clippy, unwrap 금지
     ├── flutter.md                    ← flutter analyze/test, 위젯 분리
     ├── react.md                      ← npm build/test/lint, hooks 규칙
     ├── unity.md                      ← Unity CLI 빌드, Update 최적화
     ├── backend-node.md               ← npm start/test, async 에러 핸들링
-    └── backend-python.md             ← pytest/ruff, type hints, FastAPI/Django
+    ├── backend-python.md             ← pytest/ruff, type hints, FastAPI/Django
+    └── auto-claude.md                ← Auto-Claude 에이전트 파이프라인
 ```
 
 ## install.sh가 하는 일
@@ -110,9 +113,9 @@ CLA/
 ```
 CLA/                          install.sh 실행           $CLAUDE_CONFIG_DIR/
 ├── CLAUDE.md          ─── diff -q로 비교 후 복사 ──→  ├── CLAUDE.md
-├── skills/8개         ─── 변경분만 복사 ───────────→  ├── skills/8개
+├── skills/10개        ─── 변경분만 복사 ───────────→  ├── skills/10개
 ├── scripts/4개        ─── 변경분만 복사 + chmod +x ─→ ├── scripts/4개
-├── templates/6개      ─── 변경분만 복사 ───────────→  ├── templates/6개
+├── templates/7개      ─── 변경분만 복사 ───────────→  ├── templates/7개
 ├── (settings.json)    ─── Stop hook만 additive 추가 → └── settings.json
 └── hooks/2개          ─── .git/hooks/에 복사 + chmod +x (auto-sync 등록)
 ```
@@ -141,6 +144,7 @@ CLA/                          install.sh 실행           $CLAUDE_CONFIG_DIR/
 | `*.sln` 또는 `Assets/Scripts/` | unity |
 | `package.json` + express/fastify/koa/nest | backend-node |
 | `requirements.txt`/`pyproject.toml` + fastapi/django/flask | backend-python |
+| `.auto-claude/` 또는 `apps/backend/core/agent_registry.py` | auto-claude |
 
 복합 프로젝트(React + Node 백엔드 등)는 여러 타입이 동시에 감지되어 하나의 CLAUDE.md로 합쳐진다.
 기존 CLAUDE.md가 있으면 덮어쓰기/추가/취소 선택.

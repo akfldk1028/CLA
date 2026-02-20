@@ -4,9 +4,9 @@
 #
 # Installs to $CLAUDE_CONFIG_DIR (fallback: ~/.claude):
 # - CLAUDE.md (global behavioral rules)
-# - skills/ (8 skills)
+# - skills/ (10 skills)
 # - scripts/ (4 utility scripts)
-# - templates/ (6 project templates)
+# - templates/ (7 project templates)
 # - settings.json Stop hook (check-context.sh)
 #
 # Only copies files that have changed (diff -q). Safe to re-run.
@@ -73,7 +73,7 @@ fi
 
 # --- Skills (8) ---
 log_info "Skills..."
-SKILLS=(handoff half-clone clone gha karpathy-guidelines reddit-fetch review-claudemd cla-init)
+SKILLS=(handoff half-clone clone gha karpathy-guidelines reddit-fetch review-claudemd cla-init ac ac-status)
 
 for skill in "${SKILLS[@]}"; do
     src="$CLA_DIR/skills/$skill/SKILL.md"
@@ -114,7 +114,7 @@ done
 
 # --- Templates (6) ---
 log_info "Templates..."
-TEMPLATES=(rust.md flutter.md react.md unity.md backend-node.md backend-python.md)
+TEMPLATES=(rust.md flutter.md react.md unity.md backend-node.md backend-python.md auto-claude.md)
 
 for tmpl in "${TEMPLATES[@]}"; do
     src="$CLA_DIR/templates/$tmpl"

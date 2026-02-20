@@ -8,7 +8,7 @@ Initialize a project-specific CLAUDE.md from templates with **auto-detection** a
 
 **Argument:** `$ARGUMENTS` (optional - auto-detects if empty)
 
-Available types: `rust`, `flutter`, `react`, `unity`, `backend-node`, `backend-python`
+Available types: `rust`, `flutter`, `react`, `unity`, `backend-node`, `backend-python`, `auto-claude`
 
 ---
 
@@ -26,6 +26,7 @@ Scan the **current project root** for marker files and determine ALL matching ty
 | `*.sln` file OR `Assets/Scripts/` directory | `unity` |
 | `package.json` with `"express"` or `"fastify"` or `"koa"` or `"nest"` in dependencies | `backend-node` |
 | `requirements.txt` or `pyproject.toml` or `Pipfile`, AND (`fastapi` or `django` or `flask` in those files) | `backend-python` |
+| `.auto-claude/` directory OR `apps/backend/core/agent_registry.py` | `auto-claude` |
 
 **Important detection rules:**
 - A project can match **multiple types** (e.g., React frontend + Node backend in monorepo)

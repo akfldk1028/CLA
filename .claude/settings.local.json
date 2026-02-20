@@ -28,7 +28,9 @@
       "Bash(npm root:*)",
       "Bash(xargs:*)",
       "Bash(xxd:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(bash CLA/install.sh)",
+      "Bash(python:*)"
     ]
   }
 }
