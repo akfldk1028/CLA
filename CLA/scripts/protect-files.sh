@@ -5,6 +5,8 @@
 # Installed by CLA install.sh into $CLAUDE_CONFIG_DIR/settings.json.
 
 if ! command -v jq > /dev/null 2>&1; then
+    echo "[CLA] Warning: jq not installed, file protection denying by default" >&2
+    echo '{"hookSpecificOutput":{"permissionDecision":"deny","permissionDecisionReason":"jq not installed - file protection hook cannot validate"}}'
     exit 0
 fi
 

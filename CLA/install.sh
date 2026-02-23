@@ -22,10 +22,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_success() { echo -e "${GREEN}[OK]${NC} $1"; }
-log_warning() { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $1" >&2; }
+log_info() { printf '%b\n' "${BLUE}[INFO]${NC} $1"; }
+log_success() { printf '%b\n' "${GREEN}[OK]${NC} $1"; }
+log_warning() { printf '%b\n' "${YELLOW}[WARN]${NC} $1"; }
+log_error() { printf '%b\n' "${RED}[ERROR]${NC} $1" >&2; }
 
 # Resolve CLA source directory (where this script lives)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -182,7 +182,7 @@ if [ ! -f "$SETTINGS_FILE" ]; then
 fi
 
 # Build the hook command with the correct CONFIG_DIR path
-HOOK_CMD="bash ${CONFIG_DIR}/scripts/check-context.sh"
+HOOK_CMD="bash '${CONFIG_DIR}/scripts/check-context.sh'"
 
 if grep -q "check-context.sh" "$SETTINGS_FILE" 2>/dev/null; then
     log_success "  Stop hook already exists, skipping"
@@ -207,7 +207,7 @@ fi
 # --- PreToolUse hook (protect-files.sh) ---
 log_info "Checking settings.json for PreToolUse hook..."
 
-PROTECT_CMD="bash ${CONFIG_DIR}/scripts/protect-files.sh"
+PROTECT_CMD="bash '${CONFIG_DIR}/scripts/protect-files.sh'"
 
 if grep -q "protect-files.sh" "$SETTINGS_FILE" 2>/dev/null; then
     log_success "  PreToolUse hook already exists, skipping"
@@ -230,7 +230,7 @@ fi
 # --- PreCompact hook (backup-transcript.sh) ---
 log_info "Checking settings.json for PreCompact hook..."
 
-BACKUP_CMD="bash ${CONFIG_DIR}/scripts/backup-transcript.sh"
+BACKUP_CMD="bash '${CONFIG_DIR}/scripts/backup-transcript.sh'"
 
 if grep -q "backup-transcript.sh" "$SETTINGS_FILE" 2>/dev/null; then
     log_success "  PreCompact hook already exists, skipping"

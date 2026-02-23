@@ -460,7 +460,9 @@ half_clone_conversation() {
     ref_uuid=$(generate_uuid)
     local ref_timestamp
     ref_timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
-    local ref_text="The half-clone is complete. This conversation now only contains the later half of the original - earlier context was removed to free up space. Just continue working from where you left off. Original session: \`${source_session}\` at: ${source_file}"
+    # Escape source_file for JSON (Windows backslash paths → \\)
+    local source_file_esc="${source_file//\\/\\\\}"
+    local ref_text="The half-clone is complete. This conversation now only contains the later half of the original - earlier context was removed to free up space. Just continue working from where you left off. Original session: \`${source_session}\` at: ${source_file_esc}"
     echo "{\"parentUuid\":\"${last_uuid}\",\"isSidechain\":false,\"userType\":\"external\",\"sessionId\":\"${new_session}\",\"type\":\"assistant\",\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"${ref_text}\"}]},\"uuid\":\"${ref_uuid}\",\"timestamp\":\"${ref_timestamp}\",\"isMeta\":true}" >> "$target_file"
 
     local output_line_count
@@ -498,9 +500,9 @@ half_clone_conversation() {
         timestamp=$(( $(date +%s%3N) + 1000 ))
     fi
 
-    # Escape for JSON (LC_ALL=C for macOS sed with non-UTF-8 bytes)
-    display_text=$(echo "$display_text" | LC_ALL=C sed 's/\\/\\\\/g' | LC_ALL=C sed 's/"/\\"/g' | LC_ALL=C tr '\n' ' ')
-    project_json=$(echo "$project_path" | LC_ALL=C sed 's/\\/\\\\/g' | LC_ALL=C sed 's/"/\\"/g')
+    # Escape for JSON (strip control chars, escape \ and ", LC_ALL=C for macOS sed)
+    display_text=$(printf '%s' "$display_text" | LC_ALL=C tr '\t\r' '  ' | LC_ALL=C tr -d '\000-\010\013\014\016-\037' | LC_ALL=C sed 's/\\/\\\\/g' | LC_ALL=C sed 's/"/\\"/g' | LC_ALL=C tr '\n' ' ')
+    project_json=$(printf '%s' "$project_path" | LC_ALL=C sed 's/\\/\\\\/g' | LC_ALL=C sed 's/"/\\"/g')
 
     # Add history entry
     echo "{\"display\":\"${display_text}\",\"pastedContents\":{},\"timestamp\":${timestamp},\"project\":\"${project_json}\",\"sessionId\":\"${new_session}\"}" >> "$HISTORY_FILE"

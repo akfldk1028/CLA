@@ -8,7 +8,7 @@
 #   {"hooks":[{"type":"command","command":"bash $CLAUDE_CONFIG_DIR/scripts/check-context.sh"}]}
 
 if ! command -v jq > /dev/null 2>&1; then
-    echo '{"decision":"block","reason":"jq is not installed. The context check hook requires jq. Install it: https://jqlang.github.io/jq/download/"}'
+    echo "[CLA] Warning: jq not installed, context check disabled" >&2
     exit 0
 fi
 

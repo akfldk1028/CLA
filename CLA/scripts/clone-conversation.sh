@@ -340,13 +340,13 @@ clone_conversation() {
         timestamp=$(( $(date +%s%3N) + 1000 ))
     fi
 
-    # Escape for JSON
-    display_text=$(echo "$display_text" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | tr '\n' ' ')
-    project_json=$(echo "$project_path" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g')
+    # Escape for JSON (strip control chars, escape \ and ")
+    display_text=$(printf '%s' "$display_text" | tr '\t\r' '  ' | tr -d '\000-\010\013\014\016-\037' | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | tr '\n' ' ')
+    project_json=$(printf '%s' "$project_path" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g')
 
     # Add history entry
     echo "{\"display\":\"${display_text}\",\"pastedContents\":{},\"timestamp\":${timestamp},\"project\":\"${project_json}\",\"sessionId\":\"${new_session}\"}" >> "$HISTORY_FILE"
-    echo "History entry added successfully"
+    log_success "History entry added"
 
     # Copy todos if they exist
     local old_todo_file="${TODOS_DIR}/${source_session}-agent-${source_session}.json"
