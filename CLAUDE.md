@@ -16,19 +16,21 @@ CLI 자체를 수정하지 않고, `$CLAUDE_CONFIG_DIR`에 파일을 넣어 매 
 | `AC247/Auto-Claude/apps/backend/` | 파이프라인 엔진 (spec_runner, daemon, 54+ 에이전트) | `/ac` 스킬이 `runners/spec_runner.py`를 실행 |
 | `AC247/Auto-Claude/apps/frontend/` | Electron 데스크톱 UI (React, Zustand, Tailwind) | Kanban, 에이전트 터미널, 로드맵 |
 | `claude-code-tips/` | 원산지 레포 (upstream) | 직접 수정 자제, CLA/에 반영 |
-| `claude-code-tips/system-prompt/2.1.47/` | 시스템 프롬프트 패치 (63개) | 버전별 폴더, UPGRADING.md 참조 |
+| `claude-code-tips/system-prompt/2.1.47/` | 시스템 프롬프트 패치 (62개) | 버전별 폴더, UPGRADING.md 참조 |
 | `claude-master/` | CLA의 원본 (upstream) | 직접 수정 자제, CLA/에 반영 |
 | `andrej-karpathy-skills/` | Karpathy 4원칙 원본 | 참고용, 수정 불필요 |
 | `docs/` | 한국어 분석 문서 | source-analysis, prompt-effectiveness, tips-ko, patches-ko |
 
-## 현재 상태 (2025-02-19)
+## 현재 상태 (2026-02-23)
 
 ### 완료된 작업
 
 1. **CLA 모듈 완성**: 10 스킬, 6 스크립트, 7 템플릿, 3 hooks (Stop/PreToolUse/PreCompact), git hooks, 상태바, read-only 권한
-2. **시스템 프롬프트 패치 v2.1.47**: 63/63 패치 적용, 42,915 bytes (~10.7K 토큰) 절감
-3. **문서 4개 작성**: source-analysis, prompt-effectiveness, tips-ko, patches-ko
-4. **코드 리뷰 완료 + 13개 버그 수정**:
+2. **시스템 프롬프트 패치 v2.1.47**: 62/62 패치 적용, 42,915 bytes (~10.7K 토큰) 절감
+3. **문서 5개 작성**: source-analysis, prompt-effectiveness, tips-ko, patches-ko, advent-of-claude-2025
+4. **코드 리뷰 2차 완료 + 13 버그 + 6 Minor + 7 Major 수정**:
+
+**1차 코드 리뷰 (13개 버그)**:
 
 | # | 파일 | 수정 내용 | 심각도 |
 |---|------|----------|--------|
@@ -46,14 +48,21 @@ CLI 자체를 수정하지 않고, `$CLAUDE_CONFIG_DIR`에 파일을 넣어 매 
 | 12 | `source-analysis.md` | "미적용"→"수동 적용", 구조 비교 정정 | Doc |
 | 13 | `prompt-effectiveness.md` | "너무 이름"→"너무 이른 시점" 오타 | Doc |
 
-### 남은 Minor 이슈 (기능에 영향 없음)
+**Minor 6개 해결**: echo-e→printf, git worktree hooks, YAML quotes, todowrite-states 제거, UUID v4 비트, 빈 패치 주석
 
-- `echo -e` → `printf` 변환 (log 함수에서 백슬래시 이스케이프 해석 방지)
-- git worktree 환경에서 `.git/hooks` 경로 감지 (`git rev-parse --git-dir` 사용)
-- YAML frontmatter `argument-hint` 인용부호 일관성
-- `todowrite-states` 패치가 disabled 상태로 배열에 남아있음 (63개 중 실제 62개 적용)
-- `hexdump` UUID 생성이 UUID v4 비트 규격 미충족 (Claude Code가 검증 안 함)
-- `system-prompt-patches-ko.md`의 카테고리 분류가 일부 패치의 실제 절감량과 불일치
+**2차 코드 리뷰 Major 7개**:
+
+| # | 파일 | 수정 내용 |
+|---|------|----------|
+| 1 | `install.sh` | echo -e → printf (log 함수) |
+| 2 | `install.sh` | hook CMD 경로 작은따옴표 (공백 안전) |
+| 3 | `clone-conversation.sh` | JSON 이스케이프 제어문자 제거 |
+| 4 | `clone-conversation.sh` | history 엔트리 printf 사용 |
+| 5 | `half-clone-conversation.sh` | ref_text Windows 백슬래시 이스케이프 |
+| 6 | `check-context.sh` | jq 미설치 시 allow (편의 hook은 fail-open) |
+| 7 | `protect-files.sh` | jq 미설치 시 deny (보안 hook은 fail-closed) |
+
+5. **AC247 ↔ CLA 연동 검증**: 스킬 연결, 데몬 인프라 6/6 테스트 통과, OAuth 인증 체인 확인
 
 ## 핵심 제약사항
 
@@ -65,5 +74,5 @@ CLI 자체를 수정하지 않고, `$CLAUDE_CONFIG_DIR`에 파일을 넣어 매 
 ## 작업 시 참고
 
 - `CLA/` 수정 후 테스트: `bash CLA/install.sh` 실행하여 `$CLAUDE_CONFIG_DIR`에 반영 확인
-- 패치 수정 후 테스트: `node claude-code-tips/system-prompt/2.1.47/patch-cli.js` 실행하여 63/63 확인
+- 패치 수정 후 테스트: `node claude-code-tips/system-prompt/2.1.47/patch-cli.js` 실행하여 62/62 확인
 - 문서는 한국어로 작성. AI가 읽는 것이 주 목적이므로 구조화된 테이블/리스트 선호.

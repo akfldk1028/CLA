@@ -62,14 +62,32 @@ Claude Code는 설정을 **덮어쓰지 않고 누적**한다:
 
 ### hooks 동작 방식
 
-`settings.json`의 `hooks.Stop` 배열에 등록된 명령은 Claude가 대화를 끝내려 할 때마다 실행된다.
+`settings.json`에 3개 hook이 등록된다:
 
+**Stop hook** (`check-context.sh`): Claude가 대화를 끝내려 할 때 실행.
 ```
 Claude가 Stop 하려 함
     → check-context.sh 실행
     → transcript에서 현재 토큰 사용량 계산
     → 85% 이상이면 {"decision": "block"} 출력 → Claude에게 /half-clone 지시
     → 85% 미만이면 아무 출력 없음 → 정상 종료
+```
+
+**PreToolUse hook** (`protect-files.sh`): Claude가 Edit/Write 도구를 호출할 때 실행.
+```
+Claude가 파일 수정 시도
+    → protect-files.sh 실행
+    → .env, *.key/*.pem, lock 파일, .git 내부 파일이면 → deny (수정 차단)
+    → 그 외 파일이면 → 통과
+    → jq 미설치 시 → deny (fail-closed, 보안 우선)
+```
+
+**PreCompact hook** (`backup-transcript.sh`): 컨텍스트 압축 직전에 실행.
+```
+컨텍스트 압축 시작
+    → backup-transcript.sh 실행
+    → 현재 transcript를 타임스탬프 파일로 백업
+    → 압축 진행 (원본 보존)
 ```
 
 ## 디렉토리 구조
@@ -93,11 +111,13 @@ CLA/
 ├── hooks/                            ← git hooks (auto-sync)
 │   ├── post-merge                    ← git pull 후 CLA/ 변경 시 install.sh 실행
 │   └── post-checkout                 ← 브랜치 전환 후 CLA/ 변경 시 install.sh 실행
-├── scripts/                          ← 유틸리티 스크립트 (4개)
+├── scripts/                          ← 유틸리티 스크립트 (6개)
 │   ├── context-bar.sh                ← 상태바: 모델, 브랜치, 컨텍스트 % 표시
 │   ├── check-context.sh              ← Stop hook: 85% 초과 시 half-clone 유도
 │   ├── clone-conversation.sh         ← 대화 복제 엔진
-│   └── half-clone-conversation.sh    ← 대화 후반부 복제 엔진
+│   ├── half-clone-conversation.sh    ← 대화 후반부 복제 엔진
+│   ├── protect-files.sh              ← PreToolUse hook: .env/키/lock/.git 편집 차단
+│   └── backup-transcript.sh          ← PreCompact hook: 컨텍스트 압축 전 백업
 └── templates/                        ← 프로젝트 타입별 CLAUDE.md 템플릿 (7개)
     ├── rust.md                       ← cargo build/test/clippy, unwrap 금지
     ├── flutter.md                    ← flutter analyze/test, 위젯 분리
@@ -114,14 +134,14 @@ CLA/
 CLA/                          install.sh 실행           $CLAUDE_CONFIG_DIR/
 ├── CLAUDE.md          ─── diff -q로 비교 후 복사 ──→  ├── CLAUDE.md
 ├── skills/10개        ─── 변경분만 복사 ───────────→  ├── skills/10개
-├── scripts/4개        ─── 변경분만 복사 + chmod +x ─→ ├── scripts/4개
+├── scripts/6개        ─── 변경분만 복사 + chmod +x ─→ ├── scripts/6개
 ├── templates/7개      ─── 변경분만 복사 ───────────→  ├── templates/7개
-├── (settings.json)    ─── Stop hook만 additive 추가 → └── settings.json
+├── (settings.json)    ─── 3 hooks additive 추가 ──→  └── settings.json
 └── hooks/2개          ─── .git/hooks/에 복사 + chmod +x (auto-sync 등록)
 ```
 
 - **멱등성**: `diff -q`로 비교해서 동일한 파일은 건너뜀. 몇 번 실행해도 안전.
-- **additive**: settings.json의 기존 hooks를 보존하고, check-context.sh hook만 추가.
+- **additive**: settings.json의 기존 hooks를 보존하고, 3개 hook만 추가 (Stop, PreToolUse, PreCompact).
 - **백슬래시 정규화**: Windows 경로(`D:\...`)를 forward slash로 변환해서 bash 호환.
 
 ## 사용법
