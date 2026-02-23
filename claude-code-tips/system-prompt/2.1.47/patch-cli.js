@@ -188,7 +188,7 @@ const patches = [
   { name: 'Slim Bash tool description (3.7KB → 0.6KB)', file: 'bash-tool' },
   { name: 'Simplify PR creation section (~1.7KB)', file: 'pr-creation' },
   { name: 'Slim EnterPlanMode When to Use (1.2KB → 200 chars)', file: 'enterplanmode-when-to-use' },
-  { name: 'Slim TodoWrite states section (1.8KB → 0.4KB)', file: 'todowrite-states' },
+  // todowrite-states: removed from array (subsumed by todowrite-examples patch, find.txt was disabled marker)
   { name: 'Slim Skill tool instructions (887 → 80 chars)', file: 'skill-tool' },
   { name: 'Slim TodoWrite When to Use (1.2KB → 200 chars)', file: 'todowrite-when-to-use' },
 
@@ -203,7 +203,7 @@ const patches = [
   { name: 'Slim WebFetch usage notes (808 → 120 chars)', file: 'webfetch-usage' },
   { name: 'Slim specialized tools instruction (~500 → 130 chars)', file: 'specialized-tools' },
   { name: 'Slim Grep tool description (~715 → 350 chars)', file: 'grep-tool' },
-  { name: 'Slim TodoWrite examples v2 (~400 chars)', file: 'todowrite-examples-v2' },
+  { name: 'Slim TodoWrite examples v2 (~400 chars)', file: 'todowrite-examples-v2' }, // replace.txt intentionally empty (deletion)
   { name: 'Slim claude-code-guide agent (~500 → 115 chars)', file: 'agent-claude-code-guide' },
   { name: 'Slim NotebookEdit (~510 → 100 chars)', file: 'notebookedit' },
   { name: 'Slim Task Management examples (~1.2KB → 130 chars)', file: 'task-management-examples' },
@@ -216,7 +216,7 @@ const patches = [
   { name: 'Slim security warning (~430 → 120 chars)', file: 'security-warning' },
   { name: 'Further slim PR creation (~400 → 150 chars)', file: 'pr-creation-v2' },
   { name: 'Slim Glob tool description (~400 → 100 chars)', file: 'glob-tool' },
-  { name: 'Remove duplicate parallel calls instruction (~270 chars)', file: 'parallel-calls-duplicate' },
+  { name: 'Remove duplicate parallel calls instruction (~270 chars)', file: 'parallel-calls-duplicate' }, // replace.txt intentionally empty (deletion)
   { name: 'Slim AskUserQuestion (~450 → 190 chars)', file: 'askuserquestion' },
   { name: 'Slim Bash.description param (~300 → 40 chars)', file: 'bash-description-param' },
   { name: 'Slim hooks instruction (~380 → 110 chars)', file: 'hooks-instruction' },

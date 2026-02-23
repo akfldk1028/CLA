@@ -5,9 +5,10 @@
 # Installs to $CLAUDE_CONFIG_DIR (fallback: ~/.claude):
 # - CLAUDE.md (global behavioral rules)
 # - skills/ (10 skills)
-# - scripts/ (4 utility scripts)
+# - scripts/ (6 utility scripts)
 # - templates/ (7 project templates)
-# - settings.json Stop hook (check-context.sh)
+# - settings.json hooks: Stop (check-context), PreToolUse (protect-files), PreCompact (backup-transcript)
+# - settings.json permissions: auto-approve read-only tools
 #
 # Only copies files that have changed (diff -q). Safe to re-run.
 #
@@ -71,7 +72,7 @@ else
     SKIPPED=$((SKIPPED + 1))
 fi
 
-# --- Skills (8) ---
+# --- Skills (10) ---
 log_info "Skills..."
 SKILLS=(handoff half-clone clone gha karpathy-guidelines reddit-fetch review-claudemd cla-init ac ac-status)
 
@@ -91,9 +92,9 @@ for skill in "${SKILLS[@]}"; do
     fi
 done
 
-# --- Scripts (4) ---
+# --- Scripts (6) ---
 log_info "Scripts..."
-SCRIPTS=(context-bar.sh check-context.sh clone-conversation.sh half-clone-conversation.sh)
+SCRIPTS=(context-bar.sh check-context.sh clone-conversation.sh half-clone-conversation.sh protect-files.sh backup-transcript.sh)
 
 for script in "${SCRIPTS[@]}"; do
     src="$CLA_DIR/scripts/$script"
@@ -112,7 +113,7 @@ for script in "${SCRIPTS[@]}"; do
     fi
 done
 
-# --- Templates (6) ---
+# --- Templates (7) ---
 log_info "Templates..."
 TEMPLATES=(rust.md flutter.md react.md unity.md backend-node.md backend-python.md auto-claude.md)
 
@@ -138,11 +139,16 @@ log_info "Git hooks..."
 REPO_ROOT="$(cd "$CLA_DIR/.." && git rev-parse --show-toplevel 2>/dev/null)" || true
 REPO_ROOT="${REPO_ROOT//\\//}"
 
-if [ -n "$REPO_ROOT" ] && [ -d "$REPO_ROOT/.git/hooks" ]; then
+GIT_DIR="$(cd "$REPO_ROOT" 2>/dev/null && git rev-parse --git-dir 2>/dev/null)" || true
+GIT_DIR="${GIT_DIR//\\//}"
+# Make absolute if relative (git rev-parse --git-dir returns relative in normal repos)
+[[ "$GIT_DIR" != /* ]] && [ -n "$GIT_DIR" ] && GIT_DIR="$REPO_ROOT/$GIT_DIR"
+
+if [ -n "$REPO_ROOT" ] && [ -n "$GIT_DIR" ] && [ -d "$GIT_DIR/hooks" ]; then
     HOOKS=(post-merge post-checkout)
     for hook in "${HOOKS[@]}"; do
         src="$CLA_DIR/hooks/$hook"
-        dst="$REPO_ROOT/.git/hooks/$hook"
+        dst="$GIT_DIR/hooks/$hook"
         if [ ! -f "$src" ]; then
             log_warning "  $hook: source not found, skipping"
             continue
@@ -163,7 +169,7 @@ if [ -n "$REPO_ROOT" ] && [ -d "$REPO_ROOT/.git/hooks" ]; then
         fi
     done
 else
-    log_warning "  Not a git repo or .git/hooks not found, skipping git hooks"
+    log_warning "  Not a git repo or hooks dir not found, skipping git hooks"
 fi
 
 # --- Stop hook in settings.json ---
@@ -198,6 +204,75 @@ else
     fi
 fi
 
+# --- PreToolUse hook (protect-files.sh) ---
+log_info "Checking settings.json for PreToolUse hook..."
+
+PROTECT_CMD="bash ${CONFIG_DIR}/scripts/protect-files.sh"
+
+if grep -q "protect-files.sh" "$SETTINGS_FILE" 2>/dev/null; then
+    log_success "  PreToolUse hook already exists, skipping"
+else
+    if command -v jq > /dev/null 2>/dev/null; then
+        jq --arg cmd "$PROTECT_CMD" '
+            .hooks = (.hooks // {}) |
+            if .hooks.PreToolUse then
+                .hooks.PreToolUse += [{"hooks":[{"type":"command","command":$cmd}],"matcher":"Edit|Write"}]
+            else
+                .hooks.PreToolUse = [{"hooks":[{"type":"command","command":$cmd}],"matcher":"Edit|Write"}]
+            end
+        ' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp" && mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
+        log_success "  PreToolUse hook added (file protection)"
+    else
+        log_warning "jq not found - please manually add PreToolUse hook to settings.json"
+    fi
+fi
+
+# --- PreCompact hook (backup-transcript.sh) ---
+log_info "Checking settings.json for PreCompact hook..."
+
+BACKUP_CMD="bash ${CONFIG_DIR}/scripts/backup-transcript.sh"
+
+if grep -q "backup-transcript.sh" "$SETTINGS_FILE" 2>/dev/null; then
+    log_success "  PreCompact hook already exists, skipping"
+else
+    if command -v jq > /dev/null 2>/dev/null; then
+        jq --arg cmd "$BACKUP_CMD" '
+            .hooks = (.hooks // {}) |
+            if .hooks.PreCompact then
+                .hooks.PreCompact += [{"hooks":[{"type":"command","command":$cmd}]}]
+            else
+                .hooks.PreCompact = [{"hooks":[{"type":"command","command":$cmd}]}]
+            end
+        ' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp" && mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
+        log_success "  PreCompact hook added (transcript backup)"
+    else
+        log_warning "jq not found - please manually add PreCompact hook to settings.json"
+    fi
+fi
+
+# --- Permissions (auto-approve read-only tools) ---
+log_info "Checking settings.json for permissions..."
+
+READONLY_PERMS='["Read","Glob","Grep","Bash(git status)","Bash(git diff *)","Bash(git log *)","Bash(git branch *)","Bash(git show *)"]'
+
+if jq -e '.permissions.allow' "$SETTINGS_FILE" > /dev/null 2>/dev/null; then
+    log_success "  Permissions already exist, merging..."
+    jq --argjson new "$READONLY_PERMS" '
+        .permissions.allow = (.permissions.allow + $new | unique)
+    ' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp" && mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
+    log_success "  Read-only permissions merged"
+else
+    if command -v jq > /dev/null 2>/dev/null; then
+        jq --argjson perms "$READONLY_PERMS" '
+            .permissions = (.permissions // {}) |
+            .permissions.allow = $perms
+        ' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp" && mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
+        log_success "  Read-only permissions added"
+    else
+        log_warning "jq not found - please manually add permissions to settings.json"
+    fi
+fi
+
 echo ""
 echo "=== Installation Complete ==="
 echo ""
@@ -209,7 +284,8 @@ echo "  - CLAUDE.md (global behavioral rules)"
 echo "  - skills/ (${#SKILLS[@]} skills: ${SKILLS[*]})"
 echo "  - scripts/ (${#SCRIPTS[@]} scripts)"
 echo "  - templates/ (${#TEMPLATES[@]} project templates)"
-echo "  - Stop hook for auto half-clone at >85% context"
+echo "  - Hooks: Stop (context check), PreToolUse (file protection), PreCompact (transcript backup)"
+echo "  - Permissions: auto-approve read-only tools (Read, Glob, Grep, git read commands)"
 echo "  - Git hooks (auto-install on git pull/branch switch)"
 echo ""
 echo "Start a new Claude Code session to apply."

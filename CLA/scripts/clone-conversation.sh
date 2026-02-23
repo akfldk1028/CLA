@@ -34,10 +34,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
-log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $1" >&2; }
+log_info() { printf '%b\n' "${BLUE}[INFO]${NC} $1"; }
+log_success() { printf '%b\n' "${GREEN}[SUCCESS]${NC} $1"; }
+log_warning() { printf '%b\n' "${YELLOW}[WARNING]${NC} $1"; }
+log_error() { printf '%b\n' "${RED}[ERROR]${NC} $1" >&2; }
 
 usage() {
     echo "Usage: $0 <session-id> [project-path]"
@@ -117,8 +117,9 @@ pre_generate_uuids() {
     local output_file="$2"
 
     if command -v hexdump  > /dev/null 2>/dev/null; then
-        # Fast path: hexdump
-        hexdump -vn $((count * 16)) -e '4/1 "%02x" "-" 2/1 "%02x" "-" 2/1 "%02x" "-" 2/1 "%02x" "-" 6/1 "%02x" "\n"' /dev/urandom > "$output_file"
+        # Fast path: hexdump + set UUID v4 bits (version=4 at pos 14, variant=8 at pos 19)
+        hexdump -vn $((count * 16)) -e '4/1 "%02x" "-" 2/1 "%02x" "-" 2/1 "%02x" "-" 2/1 "%02x" "-" 6/1 "%02x" "\n"' /dev/urandom \
+            | sed 's/^\(.\{14\}\)./\14/; s/^\(.\{19\}\)./\18/' > "$output_file"
     elif [[ -r /proc/sys/kernel/random/uuid ]]; then
         # Linux fallback
         for ((i=0; i<count; i++)); do

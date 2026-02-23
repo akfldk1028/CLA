@@ -30,7 +30,16 @@
       "Bash(xxd:*)",
       "Bash(wc:*)",
       "Bash(bash CLA/install.sh)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "mcp__filesystem__list_directory",
+      "mcp__desktop-commander__read_file",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:www.humanlayer.dev)",
+      "WebFetch(domain:claudefa.st)",
+      "WebFetch(domain:blog.sshh.io)",
+      "WebFetch(domain:stevekinney.com)",
+      "WebFetch(domain:psantanna.com)",
+      "WebFetch(domain:claude.com)"
     ]
   }
 }

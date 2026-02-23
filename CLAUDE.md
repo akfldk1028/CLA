@@ -9,9 +9,12 @@ CLI 자체를 수정하지 않고, `$CLAUDE_CONFIG_DIR`에 파일을 넣어 매 
 |----------|------|-----------------|
 | `CLA/` | **핵심 모듈** - install.sh로 `$CLAUDE_CONFIG_DIR`에 복사됨 | install.sh의 배열(SKILLS, SCRIPTS, TEMPLATES)에도 반영 필요 |
 | `CLA/skills/` | 10개 스킬 (SKILL.md) | YAML frontmatter 형식 유지 |
-| `CLA/scripts/` | 4개 스크립트 (context-bar, check-context, clone, half-clone) | bash 3.2+ 호환, jq 의존 |
+| `CLA/scripts/` | 6개 스크립트 (context-bar, check-context, clone, half-clone, protect-files, backup-transcript) | bash 3.2+ 호환, jq 의존 |
 | `CLA/hooks/` | git hooks (post-merge, post-checkout) | 기존 사용자 hook 보호 로직 있음 |
 | `CLA/templates/` | 7개 프로젝트 타입 CLAUDE.md 템플릿 | /cla-init이 자동 감지에 사용 |
+| `AC247/` | **Auto-Claude 24/7** - 자율 개발 에이전트 (Electron+Python 모노레포) | CLA의 `/ac`, `/ac-status` 스킬이 직접 호출. 별도 .git 레포 |
+| `AC247/Auto-Claude/apps/backend/` | 파이프라인 엔진 (spec_runner, daemon, 54+ 에이전트) | `/ac` 스킬이 `runners/spec_runner.py`를 실행 |
+| `AC247/Auto-Claude/apps/frontend/` | Electron 데스크톱 UI (React, Zustand, Tailwind) | Kanban, 에이전트 터미널, 로드맵 |
 | `claude-code-tips/` | 원산지 레포 (upstream) | 직접 수정 자제, CLA/에 반영 |
 | `claude-code-tips/system-prompt/2.1.47/` | 시스템 프롬프트 패치 (63개) | 버전별 폴더, UPGRADING.md 참조 |
 | `claude-master/` | CLA의 원본 (upstream) | 직접 수정 자제, CLA/에 반영 |
@@ -22,7 +25,7 @@ CLI 자체를 수정하지 않고, `$CLAUDE_CONFIG_DIR`에 파일을 넣어 매 
 
 ### 완료된 작업
 
-1. **CLA 모듈 완성**: 10 스킬, 4 스크립트, 7 템플릿, Stop hook, git hooks, 상태바
+1. **CLA 모듈 완성**: 10 스킬, 6 스크립트, 7 템플릿, 3 hooks (Stop/PreToolUse/PreCompact), git hooks, 상태바, read-only 권한
 2. **시스템 프롬프트 패치 v2.1.47**: 63/63 패치 적용, 42,915 bytes (~10.7K 토큰) 절감
 3. **문서 4개 작성**: source-analysis, prompt-effectiveness, tips-ko, patches-ko
 4. **코드 리뷰 완료 + 13개 버그 수정**:
